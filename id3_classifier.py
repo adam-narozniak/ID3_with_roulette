@@ -5,7 +5,9 @@ import pandas as pd
 import logging
 import entropy
 from tqdm import tqdm
+
 logger = logging.getLogger("ID3")
+
 
 class ID3Classifier:
     """Handles id3 algorithm operations. Mimics sklearn methods."""
@@ -19,12 +21,14 @@ class ID3Classifier:
         self._unique_in_columns = None
 
     def fit(self, X, y):
+        logger.info("Fitting started.")
         self._X = X
         self._y = y
         self._most_frequent_y = self.calculate_most_frequent_y(y)
         self._calculate_unique_in_columns()
         self._root = self._id3(self._X, self._y, None)
         self._fit = True
+        logger.info("Fitting finished.")
 
     def predict(self, X):
         """
@@ -62,8 +66,6 @@ class ID3Classifier:
                         break
         return pd.Series(y)
 
-
-
     def _id3(self, X, y, split_on_value):
 
         """
@@ -86,10 +88,7 @@ class ID3Classifier:
         features = X.columns.values
         info_gain_dict = {feature: entropy.calculate_info_gain(X, y, feature) for feature in features}
         best_feature = max(info_gain_dict, key=info_gain_dict.get)
-        # info_gain_dict = {f: v for f, v in sorted(info_gain_dict.items(), key=lambda item: item[1])}
-        # best_feature = list(info_gain_dict.keys())[-1]
-        # best_info_gain = list(info_gain_dict.values())[-1]
-        feature_values = self._unique_in_columns  # self._X[best_feature].unique()  # should we use this dataset or the original one
+        feature_values = self._unique_in_columns
         root_node = Node(split_feature_name=best_feature, split_value=split_on_value, prediction=None)
         for feature_value in feature_values[best_feature]:
             mask = X[best_feature] == feature_value
@@ -108,6 +107,3 @@ class ID3Classifier:
         for col in self._X.columns:
             unique_in_col[col] = self._X[col].unique()
         self._unique_in_columns = unique_in_col
-
-
-
