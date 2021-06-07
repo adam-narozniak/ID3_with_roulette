@@ -24,4 +24,5 @@ def read_dataset(file_path):
     X = pd.DataFrame(X)
     labels = [f"x{number:02}" for number in range(X.shape[1])]
     X.columns = labels
+    y.name = "y"
     return X, y

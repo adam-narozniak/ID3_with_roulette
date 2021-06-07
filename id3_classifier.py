@@ -4,12 +4,11 @@ import numpy as np
 import pandas as pd
 import logging
 import entropy
-from tqdm import tqdm
-
+from sklearn.base import BaseEstimator, ClassifierMixin
 logger = logging.getLogger("ID3")
 
 
-class ID3Classifier:
+class ID3Classifier(BaseEstimator, ClassifierMixin):
     """Handles id3 algorithm operations. Mimics sklearn methods."""
 
     def __init__(self):
