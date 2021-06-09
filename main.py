@@ -23,9 +23,8 @@ if __name__ == '__main__':
     prec_scores = []
     rec_scores = []
     f1_scores = []
-    n_folds = 2
+    n_folds = 5
     skf = StratifiedKFold(n_splits=n_folds)
-
     for train_index, test_index in skf.split(X, y):
         id3_classifier = ID3Classifier()
         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
@@ -39,21 +38,22 @@ if __name__ == '__main__':
         rec_scores.append(recall_score(y_test, y_pred, pos_label="1"))
         f1_scores.append(f1_score(y_test, y_pred, pos_label="1"))
 
-    print("Average scores: ")
-    print("Average accuracy score: ", np.sum(acc_scores)/n_folds)
-    print("Average precision score: ", np.sum(prec_scores)/n_folds)
-    print("Average recall score: ", np.sum(rec_scores)/n_folds)
-    print("Average f1 score: ", np.sum(f1_scores)/n_folds)
-    print("full matrix score:\n", sum(conf_matrix))
-    print("_______________________________________________")
-    for i in range(len(y_preds)):
-        print(conf_matrix[i])
-        tn, fp, fn, tp = conf_matrix[i].ravel()
-        print(f"True negative: {tn}; False positive: {fp}\nFalse negative: {fn}; True positive: {tp}")
-        print(acc_scores[i])
-        print("precision: ", prec_scores[i])
-        print("recall: ", rec_scores[i])
-        print("f1_score: ", f1_scores[i])
+    print(f"Average scores and std: ")
+    print(f"{'Average accuracy score: ':<30}", np.sum(acc_scores)/n_folds, "\tstd: ", np.std(acc_scores))
+    print(f"{'Average precision score:':<30}", np.sum(prec_scores)/n_folds, "\tstd: ", np.std(prec_scores))
+    print(f"{'Average recall score:':<30}", np.sum(rec_scores)/n_folds, "\tstd: ", np.std(rec_scores))
+    print(f"{'Average f1 score:':<30}", np.sum(f1_scores)/n_folds, "\tstd: ", np.std(f1_scores))
+    print(f"full matrix score:\n", sum(conf_matrix))
+
+    #print("_______________________________________________")
+    # for i in range(len(y_preds)):
+    #     print(conf_matrix[i])
+    #     tn, fp, fn, tp = conf_matrix[i].ravel()
+    #     print(f"True negative: {tn}; False positive: {fp}\nFalse negative: {fn}; True positive: {tp}")
+    #     print("accuracy: ", acc_scores[i])
+    #     print("precision: ", prec_scores[i])
+    #     print("recall: ", rec_scores[i])
+    #     print("f1_score: ", f1_scores[i])
 
     # X = pd.DataFrame([
     #     ['A', 1],
