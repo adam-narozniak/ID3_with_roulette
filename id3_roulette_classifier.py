@@ -9,7 +9,7 @@ import numpy as np
 
 class ID3RouletteClassifier(ID3Classifier):
 
-    def _id3(self, X, y, split_on_value):
+    def _id3(self, X, y, split_on_value, most_frequent_label):
         """
         Implementation of id3 algorithm with roulette-based feature choosing.
 
@@ -25,18 +25,18 @@ class ID3RouletteClassifier(ID3Classifier):
         if len(y.unique()) == 1:
             return Node(None, None, y.iloc[0])
         elif X.size == 0:
-            return Node(None, None, self._most_frequent_y)  # TO CHECK: middle arg doesn't matter
+            return Node(None, None, most_frequent_label)  # TO CHECK: middle arg doesn't matter
 
         features = X.columns.values
         info_gain_dict = {feature: entropy.calculate_info_gain(X, y, feature) for feature in features}
         best_feature = self._roulette_choice(info_gain_dict)
-        feature_values = self._unique_in_columns
         root_node = Node(split_feature_name=best_feature, split_value=split_on_value, prediction=None)
-        for feature_value in feature_values[best_feature]:
+        for feature_value in self._unique_in_columns[best_feature]:
             mask = X[best_feature] == feature_value
             sub_X = X[mask]
             sub_y = y[mask]
-            node = self._id3(sub_X.drop(best_feature, axis=1), sub_y, feature_value)
+            node = self._id3(sub_X.drop(best_feature, axis=1), sub_y, feature_value,
+                             self._calculate_most_frequent_label(y))
             root_node.add_child(node)
         return root_node
 

@@ -4,9 +4,9 @@ import io_utils
 import logger_setup  # do not delete it
 import numpy as np
 import sklearn.metrics
-from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.metrics import accuracy_score, make_scorer
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import cross_val_predict
 import pandas as pd
 import entropy
@@ -16,14 +16,16 @@ if __name__ == '__main__':
     X, y = io_utils.read_dataset("./data/spliceDTrainKIS.dat.txt")
     logger.info("Dataset loaded correctly")
 
-    id3_roulette_classifier = ID3RouletteClassifier()
-    # y_preds = cross_val_predict(id3_classifier, X, y, cv=2)#, scoring=make_scorer(accuracy_score))
-    # print(y_preds)
-    # print(sklearn.metrics.confusion_matrix(y, y_preds))
+    id3_classifier = ID3Classifier()
     y_preds = []
     conf_matrix = []
     acc_scores = []
-    skf = StratifiedKFold(n_splits=2)
+    prec_scores = []
+    rec_scores = []
+    f1_scores = []
+    n_folds = 2
+    skf = StratifiedKFold(n_splits=n_folds)
+
     for train_index, test_index in skf.split(X, y):
         id3_classifier = ID3Classifier()
         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
@@ -33,11 +35,25 @@ if __name__ == '__main__':
         y_preds.append(y_pred)
         conf_matrix.append(sklearn.metrics.confusion_matrix(y_test, y_pred))
         acc_scores.append(accuracy_score(y_test, y_pred))
+        prec_scores.append(precision_score(y_test, y_pred, pos_label="1"))
+        rec_scores.append(recall_score(y_test, y_pred, pos_label="1"))
+        f1_scores.append(f1_score(y_test, y_pred, pos_label="1"))
+
+    print("Average scores: ")
+    print("Average accuracy score: ", np.sum(acc_scores)/n_folds)
+    print("Average precision score: ", np.sum(prec_scores)/n_folds)
+    print("Average recall score: ", np.sum(rec_scores)/n_folds)
+    print("Average f1 score: ", np.sum(f1_scores)/n_folds)
+    print("full matrix score:\n", sum(conf_matrix))
+    print("_______________________________________________")
     for i in range(len(y_preds)):
         print(conf_matrix[i])
         tn, fp, fn, tp = conf_matrix[i].ravel()
         print(f"True negative: {tn}; False positive: {fp}\nFalse negative: {fn}; True positive: {tp}")
         print(acc_scores[i])
+        print("precision: ", prec_scores[i])
+        print("recall: ", rec_scores[i])
+        print("f1_score: ", f1_scores[i])
 
     # X = pd.DataFrame([
     #     ['A', 1],
@@ -50,4 +66,3 @@ if __name__ == '__main__':
     # logger.info("Classifier fit done")
     # y_pred = id3_roulette_classifier.predict(X)
     # print(f"accuracy: {np.sum(y_pred==y)/X.shape[0]}")
-

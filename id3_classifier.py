@@ -4,11 +4,10 @@ import numpy as np
 import pandas as pd
 import logging
 import entropy
-from sklearn.base import BaseEstimator, ClassifierMixin
 logger = logging.getLogger("ID3")
 
 
-class ID3Classifier(BaseEstimator, ClassifierMixin):
+class ID3Classifier:
     """Handles id3 algorithm operations. Mimics sklearn methods."""
 
     def __init__(self):
@@ -23,9 +22,8 @@ class ID3Classifier(BaseEstimator, ClassifierMixin):
         logger.info("Fitting started.")
         self._X = X
         self._y = y
-        self._most_frequent_y = self.calculate_most_frequent_y(y)
         self._calculate_unique_in_columns()
-        self._root = self._id3(self._X, self._y, None)
+        self._root = self._id3(self._X, self._y, None, self._calculate_most_frequent_label(y))
         self._fit = True
         logger.info("Fitting finished.")
 
@@ -65,7 +63,7 @@ class ID3Classifier(BaseEstimator, ClassifierMixin):
                         break
         return pd.Series(y)
 
-    def _id3(self, X, y, split_on_value):
+    def _id3(self, X, y, split_on_value, most_frequent_label):
 
         """
         Implementation of id3 algorithm.
@@ -82,22 +80,22 @@ class ID3Classifier(BaseEstimator, ClassifierMixin):
         if len(y.unique()) == 1:
             return Node(None, None, y.iloc[0])
         elif X.size == 0:
-            return Node(None, None, self._most_frequent_y)  # TO CHECK: middle arg doesn't matter
+            return Node(None, None, most_frequent_label)  # TO CHECK: middle arg doesn't matter
 
         features = X.columns.values
         info_gain_dict = {feature: entropy.calculate_info_gain(X, y, feature) for feature in features}
         best_feature = max(info_gain_dict, key=info_gain_dict.get)
-        feature_values = self._unique_in_columns
         root_node = Node(split_feature_name=best_feature, split_value=split_on_value, prediction=None)
-        for feature_value in feature_values[best_feature]:
+        for feature_value in self._unique_in_columns[best_feature]:
             mask = X[best_feature] == feature_value
             sub_X = X[mask]
             sub_y = y[mask]
-            node = self._id3(sub_X.drop(best_feature, axis=1), sub_y, feature_value)
+            node = self._id3(sub_X.drop(best_feature, axis=1), sub_y, feature_value,
+                             self._calculate_most_frequent_label(y))
             root_node.add_child(node)
         return root_node
 
-    def calculate_most_frequent_y(self, y):
+    def _calculate_most_frequent_label(self, y):
         return y.value_counts().index[0]  # if two counts are equal, the first return by value_counts will be taken
 
     def _calculate_unique_in_columns(self):
