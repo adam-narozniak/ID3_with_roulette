@@ -23,7 +23,7 @@ if __name__ == '__main__':
     prec_scores = []
     rec_scores = []
     f1_scores = []
-    n_folds = 5
+    n_folds = 2
     skf = StratifiedKFold(n_splits=n_folds)
     for train_index, test_index in skf.split(X, y):
         id3_classifier = ID3Classifier()
@@ -39,11 +39,12 @@ if __name__ == '__main__':
         f1_scores.append(f1_score(y_test, y_pred, pos_label="1"))
 
     print(f"Average scores and std: ")
-    print(f"{'Average accuracy score: ':<30}", np.sum(acc_scores)/n_folds, "\tstd: ", np.std(acc_scores))
-    print(f"{'Average precision score:':<30}", np.sum(prec_scores)/n_folds, "\tstd: ", np.std(prec_scores))
-    print(f"{'Average recall score:':<30}", np.sum(rec_scores)/n_folds, "\tstd: ", np.std(rec_scores))
-    print(f"{'Average f1 score:':<30}", np.sum(f1_scores)/n_folds, "\tstd: ", np.std(f1_scores))
+    print(f"{'Average accuracy score: ':<30} {np.mean(acc_scores):.02f}\tstd: {np.std(acc_scores):.02f}")
+    print(f"{'Average precision score:':<30} {np.mean(prec_scores):.02f}\tstd: {np.std(prec_scores):.02f}")
+    print(f"{'Average recall score:':<30} {np.mean(rec_scores):.02f}\tstd: {np.std(rec_scores):.02f}")
+    print(f"{'Average f1 score:':<30} {np.mean(f1_scores):.02f}\tstd: {np.std(f1_scores):.02f}")
     print(f"full matrix score:\n", sum(conf_matrix))
+
 
     #print("_______________________________________________")
     # for i in range(len(y_preds)):
